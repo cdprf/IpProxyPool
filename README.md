@@ -1,59 +1,58 @@
-# Golang实现的IP代理池
+# IP Proxy Pool Implemented in Golang
 
-> 采集免费的代理资源为爬虫提供有效的IP代理
+> Collect free proxy resources to provide effective IP proxies for crawlers
 
-## 系统功能
+## System Features
 
-- 自动爬取互联网上公开的免费代理IP
-- 周期性验证代理IP有效性
-- 提供http接口获取可用IP
+- Automatically crawl free proxy IP on the Internet
+- Periodically verify the effectiveness of proxy IP
+- Provide HTTP API to obtain available IP
 
-## 系统架构
+## System Architecture
 
 ![architecture image](./docs/images/architecture.png)
 
-## 代理池设计
+## Proxy Pool Design
 
-代理池由四部分组成：
+The proxy pool consists of four parts:
+- Fetcher:
 
-- Fetcher：
+Proxy acquisition interface, currently there are several **free proxy sources**, each call will fetch the latest proxies from these websites and put them into the Channel. You can also **add additional proxy acquisition interfaces**.
 
-代理获取接口，目前有几个 **免费代理源** ，每调用一次就会抓取这些网站最新的代理放入Channel，可自行 **添加额外的代理获取接口** 
+- Channel:
 
-- Channel：
+Temporary storage of collected proxies, use a stable website to verify the validity of the proxy, and store it in the database if it is valid.
 
-临时存放采集来的代理，通过访问稳定的网站去验证代理的有效性，有效则存入数据库
+- Schedule:
 
-- Schedule：
+Use scheduled tasks to check the availability of proxy IPs in the database, and delete unavailable proxies. It will also actively get the latest proxies through Fetcher.
 
-用定时的计划任务去检测数据库中代理IP的可用性，删除不可用的代理。同时也会主动通过 Fetcher 去获取最新代理
+- Api:
 
-- Api：
+Access interface of the proxy pool, providing `get` interface output `JSON`, which is convenient for crawlers to use directly.
 
-代理池的访问接口，提供 `get` 接口输出 `JSON` ，方便爬虫直接使用
+## Currently Supported Proxies
 
-## 目前支持的代理
+Proxy acquisition interface, currently fetches **free proxies** from several websites, and of course, supports expanding proxy interfaces on your own;
 
-代理获取接口，目前抓取这几个网站的 **免费代理** ，当然也支持自己扩展代理接口；
-
-- [89免费代理](https://www.89ip.cn)
-- [66免费代理网](http://www.66ip.cn)
-- [云代理](http://www.ip3366.net)
-- [快代理](http://www.kuaidaili.com)
+- [89 Free Proxy](https://www.89ip.cn)
+- [66 Free Proxy](http://www.66ip.cn)
+- [Cloud Proxy](http://www.ip3366.net)
+- [Fast Proxy](http://www.kuaidaili.com)
 - [Proxylist+](https://list.proxylistplus.com)
 
-## 安装及使用
+## Installation and Usage
 
-### 源码安装
+### Source Code Installation
 
 ```shell
-# 克隆项目
+# Clone the project
 git clone https://github.com/wuchunfu/IpProxyPool.git
 
-# 切换项目目录
+# Switch to the project directory
 cd IpProxyPool
 
-# 修改数据库信息
+# Modify the database information
 vi conf/config.yaml
 
 host: 127.0.0.1
@@ -61,74 +60,63 @@ dbName: IpProxyPool
 username: IpProxyPool
 password: IpProxyPool
 
-# 执行 sql 脚本，创建数据库表
+# Execute SQL scripts to create database tables
 source docs/db/mysql.sql
 
-# 安装go依赖包
+# Install Go dependencies
 go list (go mod tidy)
 
-# 编译
+# Compile
 go build IpProxyPool.go
 
-# 赋予可执行权限
+# Grant executable permission
 chmod +x IpProxyPool
 
-# 运行
+# Run
 ./IpProxyPool proxy-pool
 ```
 
-### Docker 安装
+### Docker Installation
 
-> `Docker` 请自行安装，安装完 `docker` 后查看是否安装 `docker-compose`
-> 执行这个命令查看是否成功安装 `docker-compose`, `docker-compose -version`
+> Please install `Docker` yourself, and after installing `Docker`, check if `docker-compose` is installed
+> Run this command to check if `docker-compose` is installed successfully, `docker-compose -version`
 
 ```shell
-# 克隆项目
+# Clone the project
 git clone https://github.com/wuchunfu/IpProxyPool.git
 
-# 进入项目目录
+# Enter the project directory
 cd IpProxyPool
 
-# 执行以下命令启动
+# Run the following command to start
 docker-compose -f docker-compose.yaml up -d
 
-# 执行以下命令停止
+# Run the following command to stop
 docker-compose -f docker-compose.yaml down
 ```
 
-## 访问
+## Access
 
 ```shell
-# web 访问
+# Web access
 http://127.0.0.1:3000
 
 # or
-# 随机输出可用的代理
+# Randomly output available proxies
 curl http://127.0.0.1:3000/all
 
-# 随机输出HTTP代理
+# Randomly output HTTP proxies
 curl http://127.0.0.1:3000/http
 
-# 随机输出HTTPS代理
+# Randomly output HTTPS proxies
 curl http://127.0.0.1:3000/https
 ```
 
-## 计划任务
+## Scheduled Tasks
 
-- [ ] [西拉免费代理IP](http://www.xiladaili.com)
-- [ ] [站大爷](https://www.zdaye.com)
+- [ ] [Xila Free Proxy IP](http://www.xiladaili.com)
+- [ ] [Zdaye](https://www.zdaye.com)
 
-## 诚挚的感谢
+## Sincere Thanks
 
-- 首先感谢您的使用，如果觉得程序还不错也能帮助您解决实际问题，不妨添个赞以鼓励本人继续努力，谢谢！
-- 如果您对程序有任何建议和意见，也欢迎提交issue。
-- 当然，如果您愿意贡献代码和我一起改进本程序，那再好不过了。
-
-## 注意
-本代码库仅用于学习研究使用，请勿用于非法用途，本人不承担由此带来的任何法律问题。
-
-## 交流
-
-欢迎关注 **全栈公园** ，有什么问题可以在 **全栈公园** 公众号输入 **开源交流** 进行咨询
-
-![全栈公园](./docs/images/FullStackPark.jpg)
+- Firstly, thank you for using it. If you think the program is good and can help you solve practical problems, you can add a
